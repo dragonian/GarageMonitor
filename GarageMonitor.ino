@@ -44,6 +44,14 @@ void setup() {
   Serial.begin(9600);
 }
 
+
+void debugOutput(char * str)
+{
+    Serial.print(millis());
+    Serial.print(": ");
+    Serial.println(str);
+}
+
 void pulseDoor()
 {
   digitalWrite(pinDoorPulse, LOW);
@@ -114,20 +122,21 @@ void loop()
     if (digitalRead(pinDoorSensor) == LOW)
     {
       if (setState(DOOR_CLOSED) == true)
-        Serial.println("Door is closed");
+        debugOutput("Door is now closed");
     }
   }
+
   else
   {
     if (digitalRead(pinDoorSensor) == HIGH)
     {
       if (setState(DOOR_OPEN) == true)
-        Serial.println("Door is open");
+        debugOutput("Door is open");
     }
     else
     {
       if (setState(DOOR_CLOSED) == true)
-        Serial.println("Door is closed");
+        debugOutput("Door is closed");
     }
 
     outputDoorState();
@@ -139,7 +148,7 @@ void loop()
       {   
         if (setState(DOOR_OPENING) == true)
         {        
-          Serial.println("Opening door");
+          debugOutput("REQ: Open");
           pulseDoor();
           
           delay(5000);  // Wait for the door to react
@@ -152,7 +161,7 @@ void loop()
       {
         if (setState(DOOR_CLOSING) == true)
         {
-          Serial.println("Closing door");
+          debugOutput("REQ: Close");
           pulseDoor();
           
           delay(1000);   // Wait for the door to react
