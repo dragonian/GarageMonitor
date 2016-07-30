@@ -28,6 +28,7 @@ boolean setState(DoorState state);
 
 DoorState doorState = UNKNOWN;
 DoorState oldState = UNKNOWN;
+long lastEventTime = 0;
 
 void setup() {
 
@@ -128,6 +129,7 @@ void loop()
 
   else
   {
+    // this is to update the state when the door is opened "manually"
     if (digitalRead(pinDoorSensor) == HIGH)
     {
       if (setState(DOOR_OPEN) == true)
@@ -142,6 +144,7 @@ void loop()
     outputDoorState();
     delay(200);  // need this delay, so the vcrx can update its state
       
+    // request from vcrx to open/close
     if (digitalRead(pinOpenDoorReq) == LOW)
     {
       if (doorState == DOOR_CLOSED)
@@ -150,6 +153,7 @@ void loop()
         {        
           debugOutput("REQ: Open");
           pulseDoor();
+          lastEventTime = millis();
           
           delay(5000);  // Wait for the door to react
         }
@@ -163,6 +167,7 @@ void loop()
         {
           debugOutput("REQ: Close");
           pulseDoor();
+          lastEventTime = millis();
           
           delay(1000);   // Wait for the door to react
         }
@@ -170,6 +175,18 @@ void loop()
     }
   }
   
+  if (doorState == DOOR_OPENING || doorState == DOOR_CLOSING)
+  {
+    // Normal door open time seems to be around 15 seconds
+    // if we're still in this state after 20 seconds,
+    // assume the door is open, and let additional commands work
+    if ( lastEventTime + 20000 < millis() )
+    {
+      if (setState(DOOR_OPEN) == true)
+        debugOutput("Reset Door state to open");
+    }
+  }
+
   outputDoorState();
 
 }
